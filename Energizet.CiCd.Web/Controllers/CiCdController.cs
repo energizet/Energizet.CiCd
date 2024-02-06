@@ -16,28 +16,42 @@ public class CiCdController : Controller
 	// GET
 	public async Task<IActionResult> Index()
 	{
+		Console.WriteLine(Request.Path);
 		try
 		{
 			var process = new Process();
 			var ciCdScript = Path.Combine(Directory.GetCurrentDirectory(), "ci-cd.script.sh");
 			process.StartInfo.FileName = "/bin/sh";
 			process.StartInfo.Arguments = $"""
-			                              -c "{ciCdScript} "{_ciCd.FrontPath}" "{_ciCd.BackPath}""
-			                              """;
+			                               -c "{ciCdScript} "{_ciCd.FrontPath}" "{_ciCd.BackPath}""
+			                               """;
 			process.StartInfo.RedirectStandardOutput = true;
 			process.StartInfo.RedirectStandardError = true;
 			process.Start();
 			await process.WaitForExitAsync();
 
-			return Ok(new
+			var res = new
 			{
 				Output = await process.StandardOutput.ReadToEndAsync(),
 				Error = await process.StandardError.ReadToEndAsync(),
-			});
+			};
+
+			var foregroundColor = Console.ForegroundColor;
+			Console.ForegroundColor = ConsoleColor.Red;
+			Console.WriteLine(res.Error);
+			Console.ForegroundColor = ConsoleColor.Green;
+			Console.WriteLine(res.Output);
+			Console.ForegroundColor = foregroundColor;
+
+			return Ok(res);
 		}
 		catch (Exception ex)
 		{
 			return BadRequest(ex.ToString());
+		}
+		finally
+		{
+			Console.WriteLine($"{Request.Path} end");
 		}
 	}
 }
