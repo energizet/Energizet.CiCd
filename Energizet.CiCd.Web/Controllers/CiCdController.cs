@@ -13,7 +13,7 @@ public class CiCdController : Controller
 		_ciCd = ciCd;
 	}
 
-	// GET
+	[HttpPost]
 	public async Task<IActionResult> Index()
 	{
 		Console.WriteLine(Request.Path);
